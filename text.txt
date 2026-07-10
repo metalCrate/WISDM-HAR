@@ -1,0 +1,27 @@
+https://www.kaggle.com/datasets/wangboluo/mcm2024?resource=download # used dataset
+https://www.cis.fordham.edu/wisdm/dataset.php # original dataset
+
+
+
+Best trial:
+  Value: 67.619926199262
+  Params: 
+    lr: 0.050502262096056794
+    weight_decay: 0.0009557649274890603
+    label_smoothing: 0.25603943336560125
+    batch_size: 16
+    norm_fn: Identity
+    activation_fn: GELU
+
+Best trial:
+  Value: 71.21771217712177
+  Params: 
+    lr: 0.012235991118201077
+    weight_decay: 0.0006403985310643007
+    label_smoothing: 0.15201146932431786
+    norm_fn: Identity
+    activation_fn: LeakyReLU
+    class_weight_lerp: 0.3312324131252016
+    scheduler: None
+
+90.5%
