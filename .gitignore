@@ -3,3 +3,4 @@
 /__pycache__
 *.pth
 *.txt
+/original_data/WISDM_ar_v1.1
