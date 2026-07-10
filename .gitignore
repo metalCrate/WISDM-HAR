@@ -1,3 +1,5 @@
 /.venv
 /original_data
 /__pycache__
+*.pth
+*.txt
