@@ -1,0 +1,8 @@
+torch = 2.12.1
+sklearn
+matplotlib
+pandas
+scipy
+optuna
+seaborn
+numpy
