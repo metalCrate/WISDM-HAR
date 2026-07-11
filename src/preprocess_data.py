@@ -8,10 +8,10 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 def generate_split_data():
-    data_root = 'original_data'
+    data_root = 'data/raw'
     data_path = path.join(data_root, 'WISDM_ar_v1.1','WISDM_ar_v1.1_transformed.arff')
 
-    out_root = 'split_data'
+    out_root = 'data/processed'
 
     out_train = path.join(out_root, 'train.txt')
     out_val = path.join(out_root, 'val.txt')

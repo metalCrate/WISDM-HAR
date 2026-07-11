@@ -1,6 +1,6 @@
 /.venv
-/original_data
 /__pycache__
 *.pth
 *.txt
-/original_data/WISDM_ar_v1.1
+text.txt
+data/raw/WISDM_ar_v1.1

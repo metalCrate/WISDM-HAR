@@ -1,0 +1,31 @@
+random_seed: 42
+
+train:
+  epochs : 25000
+  scheduler : "OneCycleLR"  # Options: "OneCycleLR", "CosineAnnealingLR", 'CosineAnnealingWarmRestarts' "None"
+  T_0: 200 # Only used for CosineAnnealingWarmRestarts
+  T_mult: 1 # Only used for CosineAnnealingWarmRestarts
+
+  lr : 0.002
+  end_lr : 0.0001
+  weight_decay : 0.00001
+  label_smoothing : 0.15
+  class_weights : [0.43392598581926484, 0.555692289164672, 1.4287973458667087, 1.7102270972346512, 2.950979869659838, 3.6707308988609753] # Obtained through preprocess_data.py
+  class_weight_lerp : 0.33
+
+data:
+  pin_memory : True
+  persistent_workers : True
+  batch_size : 512
+  num_workers : 4
+  shuffle_train : True   
+
+model:
+  input_size : 43 # Fixed
+  hidden_size : 128
+  output_size : 6 # Fixed
+  depth : 4
+  norm : 'Identity' # Options: 'Identity', 'BatchNorm1d', 'LayerNorm'
+  activation : 'LeakyReLU' # Options: 'GELU', 'ReLU', 'SiLU', 'Tanh', 'LeakyReLU', 'PReLU'
+  dropout : 0.6
+  residual : True

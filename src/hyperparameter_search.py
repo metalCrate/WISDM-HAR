@@ -3,8 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch import optim
-from har_dataset import HAR_Dataset
-from models import HAR_Model0, HAR_Model1, HAR_ModelDeepAdjst
+from src.har_dataset import HAR_Dataset
+from src.models import HAR_Model0, HAR_Model1, HAR_ModelDeepAdjst
 from tqdm import tqdm
 from torch.backends import cudnn 
 import optuna

@@ -2,7 +2,7 @@ from torch.utils.data import Dataset
 from os import path
 import numpy as np
 
-root_dir = 'split_data'
+root_dir = 'data/processed'
 test_dir = path.join(root_dir, 'test.txt')
 train_dir = path.join(root_dir, 'train.txt')
 val_dir = path.join(root_dir, 'val.txt')
@@ -24,7 +24,7 @@ class HAR_Dataset(Dataset):
         self.features = []
         self.ids = []
         self.activities = []
-        self.users = []
+        self.users = [] # User IDs for potential future use (e.g., user-specific analysis or cross-validation)
 
         with open(source_dir, 'r') as f:
             for line in f:
@@ -35,6 +35,15 @@ class HAR_Dataset(Dataset):
                 self.activities.append(int(float(line[1])))
                 self.users.append(int(float(line[2])))
 
+    def get_class_names(self):
+        return [
+            'Downstairs',
+            'Jogging',
+            'Sitting',
+            'Standing',
+            'Upstairs',
+            'Walking'
+        ]
         
     def __len__(self):
         return len(self.features)
