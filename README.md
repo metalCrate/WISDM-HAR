@@ -13,12 +13,12 @@ This project implements an end-to-end pipeline for Human Activity Recognition (H
 - Reproducible training with configurable YAML files.
 
 ## Results
-| Metric | Value |
-| :--- | :--- |
-| **Test Accuracy** | **93.81%** |
-| **Macro F1-Score** | 89.7% |
-| **Weighted F1-Score** | 92.4% |
-| **Model Parameters** | 72,454  (~0.3 MB) |
+| Metric | Value | Original Paper Values |
+| :--- | :--- | :--- |
+| **Test Accuracy** | **93.81%** | 91.7% |
+| **Macro F1-Score** | 89.7% | --- |
+| **Weighted F1-Score** | 92.4% | --- |
+| **Model Parameters** | 72,454  (~0.3 MB) | --- |
 
 ![Normalized Confusion Matrix](plots/confusion_matrix.png)
 
@@ -35,8 +35,6 @@ This project implements an end-to-end pipeline for Human Activity Recognition (H
 5. python evaluate.py
 
 ## Citation
-
-If you use this dataset in your research or project, please cite the following paper:
 
 > Kwapisz, J. R., Weiss, G. M., & Moore, S. A. (2010). Activity Recognition using Cell Phone Accelerometers. In *Proceedings of the Fourth International Workshop on Knowledge Discovery from Sensor Data (at KDD-10)*. Washington DC.
 
