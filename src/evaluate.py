@@ -40,7 +40,7 @@ def plot_confusion_matrix(cm, class_names, save_name="confusion_matrix.png", nor
     plt.savefig(save_path, dpi=300)  # Save as high-res image
     plt.show()
 
-def test_model(config_path):
+def test_model(config_path : str = 'configs/config.yaml'):
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
 
@@ -83,8 +83,6 @@ def test_model(config_path):
             all_predictions.extend(predicted.cpu().numpy())
             all_labels.extend(act.cpu().numpy())
 
-    print(f"Average Accuracy: {np.mean(accuracies):.2f}%")
-
     print(f"Model size: {sum(p.numel() for p in model.parameters())} parameters")
     # print model memory size
     print(f"Model memory size: {sum(p.element_size() * p.numel() for p in model.parameters()) / (1024 ** 2):.2f} MB")
@@ -106,6 +104,7 @@ def test_model(config_path):
     print("Confusion Matrix:")
     print(cm)
     plot_confusion_matrix(cm, class_names, save_name="confusion_matrix.png")
-
+    print(f"Average Accuracy: {np.mean(accuracies):.2f}%")
+    
 if __name__ == "__main__":
     test_model(config_path='configs/config.yaml')

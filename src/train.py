@@ -42,10 +42,10 @@ def create_plot(train_losses, validation_losses, validation_accuracies, save_nam
 
     plt.tight_layout()
     plt.savefig(save_path)
-    plt.show()
+    #plt.show()
 
 
-def train(config_path):
+def train_from_config(config_path :str = 'configs/config.yaml'):
     # ------- 1. Load Config -------
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
@@ -175,19 +175,19 @@ def train(config_path):
         validation_accuracies.append(accuracy)
 
         print(f"Epoch {epoch+1}/{num_epochs}, Tr Loss: {_tr_loss:.4f}, Val Loss: {_val_loss:.4f}")
-        print(f"Validation Accuracy: {accuracy:.2f}%")
+        print(f"Validation Accuracy: {accuracy:.2f}%")  
     
     print("==== Training Summary ====")
     print(f"Final validation accuracy: {validation_accuracies[-1]:.2f}%")
     print(f"Model size: {sum(p.numel() for p in model.parameters())} parameters")
     
     torch.save(model.state_dict(), "har_model_deep_final.pth")
-    create_plot(train_losses, validation_losses, validation_accuracies, save_name="training_plot.png")
+    create_plot(train_losses, validation_losses, validation_accuracies, save_name=f"training_plot_{num_epochs}epochs.png")
 
-    print(f"Training complete. Model saved as 'har_model_deep_final.pth' and training plot saved as 'training_plot.png'.")
+    print(f"Training complete. Model saved as 'har_model_deep_final.pth' and training plot saved as 'training_plot_{num_epochs}epochs.png'.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, default='configs/config.yaml', help='Path to the configuration file')
     args = parser.parse_args()
-    train(args.config)
+    train_from_config(args.config)
