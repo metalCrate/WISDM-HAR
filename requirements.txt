@@ -1,5 +1,5 @@
-torch = 2.12.1
-sklearn
+torch == 2.12.1
+scikit-learn
 matplotlib
 pandas
 scipy
