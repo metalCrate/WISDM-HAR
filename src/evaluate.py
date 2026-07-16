@@ -1,3 +1,4 @@
+# Evaluation stays separate from training so metrics and plots can be generated independently.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -16,8 +17,22 @@ from os import path
 import csv
 
 def plot_confusion_matrix(cm, class_names, save_name="confusion_matrix.png", normalized = True):
+    """Render a confusion matrix image for the current evaluation run.
+
+    Parameters
+    ----------
+    cm : numpy.ndarray
+        Confusion matrix values.
+    class_names : list[str]
+        Ordered class labels for axes.
+    save_name : str, optional
+        Output filename, by default "confusion_matrix.png".
+    normalized : bool, optional
+        Whether to show row-normalized proportions instead of counts, by default True.
+    """
     save_path = path.join("plots", save_name)
 
+    # Normalize rows when the goal is to compare per-class recall patterns.
     if normalized:
         row_sums = cm.sum(axis=1, keepdims=True)
         cm_normalized = cm.astype('float') / (row_sums + 1e-9)
@@ -41,12 +56,28 @@ def plot_confusion_matrix(cm, class_names, save_name="confusion_matrix.png", nor
     plt.show()
 
 def test_model(config_path : str = 'configs/config.yaml'):
+    """Load the trained model, score it on the test split, and report metrics.
+
+    Parameters
+    ----------
+    config_path : str, optional
+        Path to the YAML config file, by default 'configs/config.yaml'.
+
+    Returns
+    -------
+    None
+
+    Side Effects
+    ------------
+    Loads model weights, prints metrics, and saves a confusion-matrix plot.
+    """
+    # Read config so the evaluation setup matches training.
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     BATCH_SIZE = config['data']['batch_size']
-    model_state_path = 'har_model_deep_final.pth'
+    model_state_path = 'models/har_model_deep_final.pth'
 
     model = HAR_ModelDeepAdjst(
         input_size=config['model']['input_size'],
@@ -59,12 +90,13 @@ def test_model(config_path : str = 'configs/config.yaml'):
         residual=config['model']['residual']
                                 ).to(device)
 
-    # Load the trained model weights
+    # Load the trained weights before inference so metrics reflect the saved checkpoint.
     model.load_state_dict(torch.load(model_state_path, map_location=device))
 
     test_dataset = HAR_Dataset(split_type='test')
     test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
+    # Collect batch-level outputs so aggregate metrics can be computed after inference.
     accuracies = []
     all_predictions = []
     all_labels = []
@@ -84,7 +116,6 @@ def test_model(config_path : str = 'configs/config.yaml'):
             all_labels.extend(act.cpu().numpy())
 
     print(f"Model size: {sum(p.numel() for p in model.parameters())} parameters")
-    # print model memory size
     print(f"Model memory size: {sum(p.element_size() * p.numel() for p in model.parameters()) / (1024 ** 2):.2f} MB")
 
     y_pred = np.array(all_predictions)
@@ -95,6 +126,7 @@ def test_model(config_path : str = 'configs/config.yaml'):
     print(f"F1 Score (Macro): {f1_macro:.4f}")
     print(f"F1 Score (Weighted): {f1_weighted:.4f}")
 
+    # Use the dataset label ordering to keep reports readable and comparable.
     class_names = test_dataset.get_class_names()
     print("\nClassification Report:")
 
@@ -107,4 +139,5 @@ def test_model(config_path : str = 'configs/config.yaml'):
     print(f"Average Accuracy: {np.mean(accuracies):.2f}%")
     
 if __name__ == "__main__":
+    # Preserve direct execution for ad hoc evaluation from the command line.
     test_model(config_path='configs/config.yaml')

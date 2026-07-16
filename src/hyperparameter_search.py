@@ -1,3 +1,4 @@
+# Hyperparameter search is isolated so experiments do not affect the training script.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -9,15 +10,13 @@ from tqdm import tqdm
 from torch.backends import cudnn 
 import optuna
 
-cudnn.benchmark = True  # Enable cuDNN auto-tuner for optimal performance
-
-# Train settings
+# Keep the trial budget explicit so runs remain comparable.
 EPOCHS = 50
 
-# Optim settings
+cudnn.benchmark = True
 
 
-# Dataloader settings
+# Keep data-loader behavior fixed so the search space stays focused on model quality.
 PIN_MEMORY = True
 PERSISTENT_WORKERS = True
 
@@ -25,18 +24,30 @@ NUM_WORKERS = 4
 SHUFFLE_TRAIN = True
 
 def objective(trial: optuna.trial.Trial):
+    """Evaluate one Optuna trial on the validation split.
+
+    Parameters
+    ----------
+    trial : optuna.trial.Trial
+        Active Optuna trial used to sample hyperparameters.
+
+    Returns
+    -------
+    float
+        Validation accuracy for the sampled configuration.
+    """
+    # Select the runtime device once so the trial can move tensors consistently.
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # Hyperparameter search space
     lr = trial.suggest_float("lr", 1e-5, 1e-1, log=True)
     WEIGHT_DECAY = trial.suggest_float("weight_decay", 1e-5, 1e-1, log=True)
     LABEL_SMOOTHING = trial.suggest_float("label_smoothing", 0.01, 0.5)
-    BATCH_SIZE = 256 # FROZEN (lower is better but slower) trial.suggest_categorical("batch_size", [16, 32, 64, 128, 256])
+    BATCH_SIZE = 256 # frozen due to performance issues (lower is generally faster converging but slower to finish an epoch) # trial.suggest_categorical("batch_size", [16, 32, 64, 128, 256])
     norm_fn = trial.suggest_categorical("norm_fn", ["LayerNorm", "BatchNorm1d", "Identity"])
     activation_fn = trial.suggest_categorical("activation_fn", ["ReLU", "GELU", "SiLU", "Tanh", 'LeakyReLU'])
     class_weight_lerp = trial.suggest_float("class_weight_lerp", 0.0, 1.0)
     scheduler = trial.suggest_categorical("scheduler", ["OneCycleLR", "CosineAnnealingLR", "None"])
     
-    # Rest
     # Weights as calculated from preprocess_data.py
     class_weights = torch.tensor([0.43392598581926484, 0.555692289164672, 1.4287973458667087, 1.7102270972346512, 2.950979869659838, 3.6707308988609753], dtype=torch.float32)
 
@@ -65,6 +76,7 @@ def objective(trial: optuna.trial.Trial):
 
     criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=LABEL_SMOOTHING).to(device)
 
+    # Optimize against validation accuracy because the search goal is generalization.
     for epoch in range(EPOCHS):
         
         tr_losses = []
@@ -114,6 +126,7 @@ def objective(trial: optuna.trial.Trial):
 
 
 if __name__ == "__main__":
+    # Run the study directly so experiments can be launched without extra code.
     study = optuna.create_study(direction="maximize")
     study.optimize(objective, n_trials=50) 
 

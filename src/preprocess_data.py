@@ -1,3 +1,4 @@
+# Preprocessing is isolated so the raw archive can be transformed reproducibly.
 import pandas as pd
 from scipy.io import arff
 import re
@@ -8,6 +9,13 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 def generate_split_data():
+    """Transform the raw WISDM archive into normalized train/val/test splits.
+
+    Side Effects
+    ------------
+    Reads the raw ARFF file, computes summary statistics, and writes split text files.
+    """
+    # Resolve paths here so preprocessing can be run from the project root.
     data_root = 'data/raw'
     data_path = path.join(data_root, 'WISDM_ar_v1.1','WISDM_ar_v1.1_transformed.arff')
 
@@ -24,10 +32,12 @@ def generate_split_data():
     class_to_idx = {c: str(i) for i, c in enumerate(classes)}
 
 
+    # Accumulate rows in memory so the split can be stratified after cleaning.
     stripped_values = []
 
     class_counts = {c: 0 for c in classes}
 
+    # Stream the source file once to normalize labels and preserve reproducibility.
     print("Processing and splitting data.\n")
     with open(data_path, 'r') as f:
         for line in f:
@@ -47,8 +57,8 @@ def generate_split_data():
             stripped_values.append(values)
 
 
+    # Report dataset balance before splitting so class skew stays visible.
     print(f"Total samples found: {len(stripped_values)}")
-    #print("Last sample:", stripped_values[-1]) 
     print("Class counts:")
     for class_name, count in class_counts.items(): 
         print(f"  {class_name}: {count}")
@@ -61,6 +71,7 @@ def generate_split_data():
     _weights = [1.0 / (occur + 1e-8) / 6 for occur in _occurences]
     print(_weights)
 
+    # Normalize numeric features while leaving identifiers and labels intact.
     mean_values = np.mean(stripped_values, axis=0)
     std_values = np.std(stripped_values, axis=0)
 
@@ -74,6 +85,7 @@ def generate_split_data():
         for j in range(3,len(point)):
             point[j] = normalized_values[i][j]
 
+    # Split after normalization so each subset reflects the same global scaling.
     # Generate train, validation, and test splits
     # Note: each data point is in the format [id, class, user, ...features]
 
@@ -99,7 +111,7 @@ def generate_split_data():
     print(f"Test samples: {len(test_rows)}")
 
 
-    # Save the splits to text files
+    # Persist the processed splits in the exact layout expected by the dataset loader.
     np.savetxt(out_train, train_rows, fmt='%s', delimiter=',')
     np.savetxt(out_val, val_rows, fmt='%s', delimiter=',')
     np.savetxt(out_test, test_rows, fmt='%s', delimiter=',')
@@ -107,4 +119,5 @@ def generate_split_data():
     print(f"Data splits saved to {out_root} directory.")
 
 if __name__ == "__main__":
+    # Preserve script-style execution for one-off preprocessing runs.
     generate_split_data()

@@ -1,15 +1,24 @@
+# Dataset loading stays local so training and evaluation share the same split format.
 from torch.utils.data import Dataset
 from os import path
 import numpy as np
 
+# Centralize split paths so file handling stays consistent across consumers.
 root_dir = 'data/processed'
 test_dir = path.join(root_dir, 'test.txt')
 train_dir = path.join(root_dir, 'train.txt')
 val_dir = path.join(root_dir, 'val.txt')
 
 class HAR_Dataset(Dataset):
+    """Dataset wrapper for the preprocessed WISDM HAR text splits.
+
+    Parameters
+    ----------
+    split_type : str, optional
+        Which split to load, by default 'train'.
+    """
     def __init__(self, split_type : str = 'train'):
-        
+        # Resolve the requested split once so the rest of the loader can stay simple.
         source_dir = None
         match split_type:
             case 'train':
@@ -21,6 +30,7 @@ class HAR_Dataset(Dataset):
             case _:
                 raise ValueError(f"Invalid split type: {split_type}. Must be one of ['train', 'test', 'val']")
 
+            # Load eagerly because the processed splits are small enough for in-memory use.
         self.features = []
         self.ids = []
         self.activities = []
@@ -36,6 +46,13 @@ class HAR_Dataset(Dataset):
                 self.users.append(int(float(line[2])))
 
     def get_class_names(self):
+        """Return the canonical class labels used by the processed dataset.
+
+        Returns
+        -------
+        list[str]
+            Ordered activity names aligned with the encoded labels.
+        """
         return [
             'Downstairs',
             'Jogging',
@@ -46,12 +63,32 @@ class HAR_Dataset(Dataset):
         ]
         
     def __len__(self):
+        """Return the number of samples loaded into memory.
+
+        Returns
+        -------
+        int
+            Number of dataset examples.
+        """
         return len(self.features)
 
     def __getitem__(self, idx):
+        """Fetch one sample, its activity label, and its user id.
+
+        Parameters
+        ----------
+        idx : int
+            Sample index.
+
+        Returns
+        -------
+        tuple
+            A tuple of (features, activity, user).
+        """
         return self.features[idx], self.activities[idx], self.users[idx]
     
 if __name__ == "__main__":
+    # Keep the module self-check lightweight so dataset parsing can be verified quickly.
     dataset = HAR_Dataset(split_type='train')
     print(f"Dataset length: {len(dataset)}")
     sample_features, sample_activity, sample_user = dataset[0]
