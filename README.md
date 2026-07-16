@@ -59,13 +59,15 @@ Increasing the model size and depth gave marginal improvements in accuracies, wh
 
 ## Installation & Usage
 1. Clone the repository:
-   ```bash
+   ```
    git clone https://github.com/metalCrate/WISDM-HAR.git
    cd human-activity-recognition
-2. pip install -r requirements.txt
+2. ```
+   pip install -r requirements.txt
 3. Download the dataset from https://www.cis.fordham.edu/wisdm/dataset.php. Put in data/raw so that the final directory looks like: data/raw/WISDM_ar_v1.1/...
-4. python main.py
-
+4. ```
+   python main.py
+   ```
 ## Citation
 
 > Kwapisz, J. R., Weiss, G. M., & Moore, S. A. (2010). Activity Recognition using Cell Phone Accelerometers. In *Proceedings of the Fourth International Workshop on Knowledge Discovery from Sensor Data (at KDD-10)*. Washington DC.
